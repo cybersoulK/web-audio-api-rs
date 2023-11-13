@@ -137,7 +137,7 @@ impl BaseAudioContext for ConcreteBaseAudioContext {
                 self.inner.queued_audio_listener_msgs.lock().unwrap();
             queued_audio_listener_msgs.push(message);
         } else {
-            self.send_control_msg(message).unwrap();
+            self.send_control_msg(message).ok();
             self.resolve_queued_control_msgs(id);
         }
 
@@ -387,7 +387,7 @@ impl ConcreteBaseAudioContext {
             output,
             input,
         };
-        self.send_control_msg(message).unwrap();
+        self.send_control_msg(message).ok();
     }
 
     /// Schedule a connection of an `AudioParam` to the `AudioNode` it belongs to
@@ -406,13 +406,13 @@ impl ConcreteBaseAudioContext {
     /// Disconnects all outputs of the audio node that go to a specific destination node.
     pub(crate) fn disconnect_from(&self, from: AudioNodeId, to: AudioNodeId) {
         let message = ControlMessage::DisconnectNode { from, to };
-        self.send_control_msg(message).unwrap();
+        self.send_control_msg(message).ok();
     }
 
     /// Disconnects all outgoing connections from the audio node.
     pub(crate) fn disconnect(&self, from: AudioNodeId) {
         let message = ControlMessage::DisconnectAll { from };
-        self.send_control_msg(message).unwrap();
+        self.send_control_msg(message).ok();
     }
 
     /// Connect the `AudioListener` to a `PannerNode`
@@ -426,7 +426,7 @@ impl ConcreteBaseAudioContext {
         let mut released = false;
         while let Some(message) = queued_audio_listener_msgs.pop() {
             // add the AudioListenerRenderer to the graph
-            self.send_control_msg(message).unwrap();
+            self.send_control_msg(message).ok();
             released = true;
         }
 
